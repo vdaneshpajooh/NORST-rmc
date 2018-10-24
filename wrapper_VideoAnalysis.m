@@ -67,7 +67,7 @@ if(norst == 1)
     ev_thresh = 2e-3;
     omega = 15 ;
 %     mu = mean(Train,2);
-    mu = zeros(1,t_max);
+    mu = 0;
     M_norst = M - mu;
 
     fprintf('\tNORST\n')
