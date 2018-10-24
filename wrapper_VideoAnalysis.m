@@ -66,8 +66,8 @@ if(norst == 1)
     K = 3;
     ev_thresh = 2e-3;
     omega = 15 ;
-    mu = mean(Train,2);
-%     mu = zeros(1,t_max);
+%     mu = mean(Train,2);
+    mu = zeros(1,t_max);
     M_norst = M - mu;
 
     fprintf('\tNORST\n')
@@ -118,5 +118,5 @@ end
    end
 
 %% Display the reconstructed video
-save('video_RMC_Lobby_NORST_rho10.mat')
+save('video_RMC_Lobby_NORST_rho10_noSubtraction.mat')
 % DisplayVideo(L, T, M, BG, imSize/2,'Lobby_fgbg_omega1.avi')
