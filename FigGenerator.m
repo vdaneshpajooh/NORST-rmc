@@ -1,0 +1,3 @@
+function FigGenerator()
+
+end
