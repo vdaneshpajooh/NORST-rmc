@@ -23,7 +23,7 @@ alpha = 60;
 alpha1 = 100;
 f = 100;
 cnt = 1;
-MC = 1;
+MC = 100;
 
 t_calc_pca = alpha-1:alpha:t_max;
 
