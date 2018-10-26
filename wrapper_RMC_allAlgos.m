@@ -9,10 +9,10 @@ addpath('PROPACK')
 % addpath('GRASTA')
 addpath('RPCA-GD')
 %% Algorithms to run
-NORSTR = 0;
+NORSTR = 1;
 GRASTA = 0;
 NCRMC = 0;
-RPCAGD = 1;
+RPCAGD = 0;
 %% Data Generation
 n = 1000;
 t_max = 10000;
@@ -23,7 +23,7 @@ alpha = 60;
 alpha1 = 100;
 f = 100;
 cnt = 1;
-MC = 100;
+MC = 1;
 
 t_calc_pca = alpha-1:alpha:t_max;
 
@@ -103,14 +103,18 @@ for mc = 1 : MC
                 T(idx, jdx) = 1;
             end
             
+            T_miss = ones(n,t_max);
+            T_miss(T==1) = 0;
             fprintf('fraction of sparse entries: %d \n',length(find(T(:) == 1)) / numel(T));
             
             t_train = 400;
     %%% bernoulli model for outliers
         rho = 0.1;%Rho(i); % 1-rho : denotes number of outliers
         BernMat = rand(n, t_max);
-        temp_miss = 1 .* (BernMat <= 1 - rho);
-        T_miss = temp_miss;
+%         temp_miss = 1 .* (BernMat <= 1 - rho);
+        temp_sup = 1 .* (BernMat >= 1 - rho);
+        temp_sparse = x_min + (x_max - x_min)  * rand(n,t_max);
+        S = temp_sup .* temp_sparse;
         %imagesc(T)
         
 
@@ -286,7 +290,7 @@ for mc = 1 : MC
             sqrt(mean(L(:, t_train + 1 : end).^2, 1));    
         end
         %%Calculate the subspace error
-        for jj = 1 : length(t_calc_pca)
+        for jj = 1 : length(t_calc_rpca)
             if(t_calc_pca(jj) < t_1)
                 if(NORSTR == 1)
                 tempRPCA_SE_Phat_P(mc, jj) = ...
@@ -384,7 +388,7 @@ SE_Phat_P_GRASTA = mean(tempGRASTA_SE_Phat_P, 1);
 end
 
 end_time = clock;
-save('RMC_RPCAGD_changingSS_MC100_rhomiss10_rhosparse10.mat');
+save('RMC_RPCAGD_changingSS_MC100_rhomissMovObj&rhoSbern_10.mat');
 % 
 % str1 = 't';
 % str2 = '$$\log SE(\hat{P}, P)$$';
@@ -393,7 +397,7 @@ save('RMC_RPCAGD_changingSS_MC100_rhomiss10_rhosparse10.mat');
 % 
 % figure
 % 
-% % plot(t_calc_pca + t_train,log10(SE_Phat_P_rpca),'*k--','LineWidth',1,'MarkerSize',6)
+% plot(t_calc_pca + t_train,log10(SE_Phat_P_rpca),'*k--','LineWidth',1,'MarkerSize',6)
 % hold on
 % % plot(t_calc_pca + t_train,log10(SE_Phat_P_GRASTA),'b^--','LineWidth',1,'MarkerSize',6)
 % % plot(t_calc_pca + t_train,log10(SE_Phat_P_NCRMC),'ys--','LineWidth',1,'MarkerSize',6)
