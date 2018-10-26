@@ -4,16 +4,16 @@
 clear;
 clc;
 % close all
-load('Lobby.mat')
+load('SwitchLight.mat')
 
 addpath('YALL1_v1.4')
 addpath('PROPACK')
 % addpath('PG-RMC')
 % addpath('PG-RMC/Mex')
 % addpath('GRASTA')
+addpath('RPCA-GD')
 
-
-L = M;
+L = I;
 Train = DataTrain;
 [n,m] = size(L);
 % [~,m] = size(Lx);
@@ -45,10 +45,10 @@ tol = 1e-10;
 
 t_back = t_max;
 
-GRASTA = 0;
+GRASTA = 1;
 norst = 1;
-NCRMC = 0;
-
+NCRMC = 1;
+RPCAGD = 1;
 % 
     rho = 0.1; %denotes fraction of missing entries
     BernMat = rand(n, t_max);
@@ -66,8 +66,8 @@ if(norst == 1)
     K = 3;
     ev_thresh = 2e-3;
     omega = 15 ;
-%     mu = mean(Train,2);
-    mu = 0;
+    mu = mean(Train,2);
+%     mu = 0;
     M_norst = M - mu;
 
     fprintf('\tNORST\n')
@@ -116,7 +116,34 @@ end
 %        err_L_fro_ncrmc = norm(L-L_hat_ncrmc,'fro')/norm(L,'fro');
 %        err_nmse_ncrmc = sqrt(mean((L - L_hat_ncrmc).^2, 1)) ./ sqrt(mean(L.^2, 1));
    end
+   
+   if(RPCAGD == 1)
+       
+       r = 30;
+       alpha = 0.1;
+        % Decomposition via Gradient Descent
+        % algorithm paramters
+        params.step_const = 0.5; % step size parameter for gradient descent
+        params.max_iter   = 30;  % max number of iterations
+        params.tol        = 2e-4;% stop when ||Y-UV'-S||_F/||Y||_F < tol
+        % alpha_bnd is some safe upper bound on alpha, 
+        % that is, the fraction of nonzeros in each row of S (can be tuned)
+        gamma = 1.5;
+        alpha_bnd = gamma*alpha;
+        
+        
+       fprintf('RPCA-GD\n');
+       t_rpcagd = tic;
+       [U,V] = rpca_gd(M, r, alpha_bnd, params);
+       L_hat_rpcagd = U*V'; % low-rank
+       S_hat_rpcagd = M - L_hat_rpcagd; % sparse
+       
+       t_RPCAGD = toc(t_rpcagd);
+       
+%        err_L_fro_ncrmc = norm(L-L_hat_ncrmc,'fro')/norm(L,'fro');
+%        err_nmse_ncrmc = sqrt(mean((L - L_hat_ncrmc).^2, 1)) ./ sqrt(mean(L.^2, 1));
+   end
 
 %% Display the reconstructed video
-save('video_RMC_Lobby_NORST_rho10_noSubtraction.mat')
+save('video_RMC_SwitchLight_allAlgos_rho10.mat')
 % DisplayVideo(L, T, M, BG, imSize/2,'Lobby_fgbg_omega1.avi')
