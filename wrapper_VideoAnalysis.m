@@ -4,25 +4,23 @@
 clear;
 clc;
 % close all
-load('SwitchLight.mat')
+load('/home/vahidd/Git/Research/NORST-random/data/Han_Data/Curtain.mat')
 
 addpath('YALL1_v1.4')
 addpath('PROPACK')
-% addpath('PG-RMC')
-% addpath('PG-RMC/Mex')
-% addpath('GRASTA')
+addpath('PG-RMC')
+addpath('/home/vahidd/Git/Research/NORST-robust/PG-RMC/Mex')
 addpath('RPCA-GD')
 
-L = I;
-Train = DataTrain;
-[n,m] = size(L);
+
+% Lx = M;
 % [~,m] = size(Lx);
 % L = zeros(prod(imSize/2),m);
 % for i = 1:m
 %     x = reshape(Lx(:,i), imSize);
 %     L(:,i) = reshape(x(1:2:end,1:2:end),[prod(imSize/2),1]);
 % end
-
+% 
 % [~,m] = size(DataTrain);
 % Train = zeros(prod(imSize/2),m);
 % for i = 1:m
@@ -30,6 +28,8 @@ Train = DataTrain;
 %     Train(:,i) = reshape(x(1:2:end,1:2:end),[prod(imSize/2),1]);
 % end
 
+L = I;
+Train = DataTrain;
 %% Parameter Initialization
 [n,m] = size(L);
 
@@ -49,15 +49,44 @@ GRASTA = 1;
 norst = 1;
 NCRMC = 1;
 RPCAGD = 1;
-% 
-    rho = 0.1; %denotes fraction of missing entries
-    BernMat = rand(n, t_max);
-    T = 1 .* (BernMat <= 1 - rho);
+
+%% Generating missing entries
+
+%     rho = 0.1; %denotes fraction of missing entries
+%     BernMat = rand(n, t_max);
+%     T = 1 .* (BernMat <= 1 - rho);
     
+%     (Moving Square)
+    T = ones(n,m);
+    
+    height = imSize(1);
+    width = imSize(2);
+    
+    a = 28;
+    b = 32;
+    
+    idx_frame = [width * 0 + 1 : width * 15];
+    smin = 0;
+    smax = 1;
+    for j = idx_frame   
+        for i = smin:smax
+            T(height*i+ a : height*i + b ,j) = zeros(b-a+1,1);
+        end
+        smax = smax+1;
+        if(smax - smin > width/4)
+            smin = smin + 1;
+        end
+        
+        if(smax >= width)
+            smax = 1;
+            smin = 0;
+        end
+        
+    end
+
 M = L .* T;
     
 %% Calling the Algorithms
-
 
 if(norst == 1)
         %%% NORST-random %%%
@@ -67,7 +96,7 @@ if(norst == 1)
     ev_thresh = 2e-3;
     omega = 15 ;
     mu = mean(Train,2);
-%     mu = 0;
+%     mu = zeros(1,t_max);
     M_norst = M - mu;
 
     fprintf('\tNORST\n')
@@ -145,5 +174,5 @@ end
    end
 
 %% Display the reconstructed video
-save('video_RMC_SwitchLight_allAlgos_rho10.mat')
-% DisplayVideo(L, T, M, BG, imSize/2,'Lobby_fgbg_omega1.avi')
+% save('video_curtain_otherAlgos_rho30.mat')
+% DisplayVideo(L, T, M, BG, imSize,'Curtain_movobj_fgbg.avi')
