@@ -11,12 +11,12 @@ List of main files:
 4. NORST_video.m : main function which implements the NORST algorithm for background recovery (real data-video)
 
 Folders:
-YALL1 : folder containing files to implement ell-1 minimization.
-PROPACK : Linear Algebra toolbox for MATLAB
-data : folder containing several video data matrices for the task of background recovery
+	YALL1 : folder containing files to implement ell-1 minimization.
+	PROPACK : Linear Algebra toolbox for MATLAB
+	data : folder containing several video data matrices for the task of background recovery
 
 Other files:
-ncrpca : code implemented Non-convex Robust PCA, NIPS 14 downloaded from authors' website and its accompaniments lansvd, lanbpro etc
-cgls : fast method to implement least squares
+	ncrpca : code implemented Non-convex Robust PCA, NIPS 14 downloaded from authors' website and its accompaniments lansvd, lanbpro etc
+	cgls : fast method to implement least squares
 
 For any further questions/suggestions please contact us @ vahidd/pkurpadn iastate edu (insert obvious symbols)
