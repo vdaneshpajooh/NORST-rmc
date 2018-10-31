@@ -1,66 +1,49 @@
-function [x_cs_hat, FG, BG, L_hat, P_hat, S_hat, T_hat, t_hat, ...
-    P_track_full, T_calc]= NORST_video(M, mu, T_miss, ...
-    P_init, ev_thresh, alpha, K, omega)
-%This folder contains the code accompanying pre-print.
-%[1] "Nearly Optimal Robust Subspace Tracking", Praneeth Narayanamurthy and Namrata Vaswani, arXiv:1712.06061, 2017.
-
-%%%                          Inputs                         %%%
-%%%     M - measurement matrix                              %%%
-%%%     ev_thres - threshold for subspace change detection  %%%
-%%%     P_init - an initial estimate of the subspace        %%%
-%%%     t_train - the dimension of the training data        %%%
-
-
-%%%                       Algorithm parameters              %%%
-%%%     alpha - frame length                                %%%
-%%%     K - number of projection PCA steps                  %%%
-%%%     omega - threshold for non-zero value in S           %%%
-%%% 	K_CS - number of CoSaMP iterations 		    %%%
-%%% 	outc - an upper bound on estimate of fraction of outliers per column
-
-%%%                          Outputs                        %%%
-%%%     L_hat - estimate of the low rank matrix             %%%
-%%%     P_hat - estimate of the subspace in which L lies    %%%
-%%%     S_hat - estimate of the sparse signal               %%%
-%%%     t_hat - estimate of subspace change times           %%%
+function [FG,BG] = NORST_video(M,mu,T_obs,P_init,ev_thresh,alpha,K,omega,tol)
+% This MATLAB function implements the code accompanying pre-print for
+% Background Recovery in videos:
+% 
+% Input:
+% M = measurement matrix
+% mu = mean
+% T_obs = observed entries' support
+% P_init = an initial estimate of the subspace
+% 
+%   Algorithm parameters:
+%   ev_thres = threshold for subspace change detection
+%   alpha = frame length
+%   K = number of projected PCA steps
+%   omega = the threshold for non-zero values in S
+%   tol = tolerance for cgls function (conjugate gradient LS)
+% 
+% Output:
+% BG = estimate of the low rank matrix, i.e., recovered background
+% FG = estimate of the sparse matrix, i.e., recovered foreground
 
 %% Initializations
-%thresh = ev_thresh / 2;
-[~, r_init] = size(P_init);
-% t_train = 500;
-% [P_init, ~] = svds(M_t(:,1:t_train),r_init);
-
-% M = M_t(:,t_train+1 : end);
+[~, r] = size(P_init);
 [n, t_max] = size(M);
-% T_miss = T(:,t_train+1:end);
 
 P_hat_old = P_init;
 P_hat_new = [];
 P_hat = [P_hat_old, P_hat_new];
 
-%% Mean Subtraction (just for video case)
-% M_mean = mean(M,1);
-% M = M - mu;
-
 T_hat = zeros(n, t_max);
 S_hat = zeros(n, t_max);
-
 L_hat = zeros(n, t_max);
 BG = zeros(n,t_max);
 FG = zeros(n, t_max);
 
 t_hat = [];
 
-% L_hat(:, 1 : t_train) = M(:, 1 : t_train);
 k = 0;
 cnt = 1;
+ph = 1; % ph : 0 => detect, 1 => ppca
+
 phi_t = (eye(n) - P_hat * P_hat');
-% In = eye(n);
-ph = 1;     %ph - 0 => detect, 1 => ppca
 
 opts.delta=0.4;
-% opts.tol = 1e-3;
 opts.print = 0;
+
 %% Main Algorithm Loop
 for ii = 1 : t_max
     %% Estimate support
@@ -69,103 +52,63 @@ for ii = 1 : t_max
     phi.times = @(x) x - (P_hat_old * (P_hat_old' * x));
     y_t = Atf.times(M(:, ii));
     
-%     weights = ones(n,1); 
-%     lambda1 = 0;
-%     weights(find(T_miss(:,ii) == 0)) = lambda1;
-%     opts.weights = weights;
-    
-%%% used for synthetic data
-%     opts.delta = omega * 2/ 15;
+    weights = ones(n,1); 
+    lambda1 = 0;
+    weights(find(T_obs(:,ii) == 0)) = lambda1;
+    opts.weights = weights;
 
-%%% videos
-if(ii==1)
-    opts.delta = omega * 2/15;
-else
-    opts.delta = 1 * norm(Atf.times(L_hat(:,ii-1)));
-end
+    if(ii==1)
+        opts.delta = omega * 2/15;
+    else
+        opts.delta = 1 * norm(Atf.times(L_hat(:,ii-1)));
+    end
     
-    opts.tol = 1e-3;
+    opts.tol = tol;
     opts.print = 0;
 
     
     x_t_hat_cs = yall1(Atf, y_t, opts);
-    omega = 1 * sqrt(M(:, ii)' * M(:, ii) / n);
-    
+    omega = 0.9 * sqrt(M(:, ii)' * M(:, ii) / n);
     x_cs_hat(:,ii) = x_t_hat_cs;
     
     t_hat_temp = find(abs(x_t_hat_cs) > omega);
     T_hat(t_hat_temp, ii) = 255;
     
-%     S_hat_sparse(t_hat_temp,ii) = phi_t(:,t_hat_temp)\y_t;
-%     y_tt = Atf.times(M(:, ii) - S_hat_sparse(:,ii));
-
-    
-    %LS.times = @(x) phi(:, t_hat_temp) * x;
-    %LS.trans = @(y) phi(:, t_hat_temp)' * x;
-    
-    %y_t = M(:, ii) - (P_hat * (P_hat' * M(:, ii)));
-    %DecayRate = 0.9; %other values work, may make it slower
-    %x_t_hat_cs = cosamp_cgls(phi_t, ...
-    %    y_t, outc, DecayRate, K_CS, 1e-6);
-    %t_hat_temp = find(abs(x_t_hat_cs) > omega);
-    %     T_hat(t_hat_temp, ii) = 1;
-    
     %% Estimate signal components
-    % %         [S_hat(t_hat_temp, ii), ~] = ...
-    % %             lsqr(phi_t(:, t_hat_temp), y_t, 1e-6, 50);
-    %     S_hat(t_hat_temp, ii) = phi_t(:, t_hat_temp) \ y_t;
-
-        T_union = unique([t_hat_temp;find(T_miss(:,ii) == 0)]);
-%         T_union = find(T_miss(:,ii) == 0);
-%     T_union = t_hat_temp;
-    %T_hat(T_union, ii) = 255;
-    S_hat(T_union, ii) = cgls(phi_t(:, T_union), y_t, ...
-        0, 1e-4, 20);
-%     S_hat(T_union,ii) = phi_t(:,T_union) \ y_t;
-    L_hat(:, ii) = M(:, ii) - S_hat(:, ii);
+    T_union = unique([t_hat_temp;find(T_obs(:,ii) == 0)]);
     
-    %just for video case
-%     FG(:, ii) = S_hat(:,ii) + mu;
-    BG(:,ii) = L_hat(:,ii) + mu;
+    S_hat(T_union, ii) = cgls(phi_t(:, T_union), y_t, 0, tol, 20);
+    L_hat(:, ii) = M(:, ii) - S_hat(:, ii);
+        
+    FG(:, ii) = S_hat(:,ii);
+    BG(:, ii) = L_hat(:,ii) + mu;
     
     %% Subspace update
-    if(~mod(ii + 1 , alpha))
-        fprintf('%d\n', ii);
+    if(~mod(ii + 1 , alpha))        
         u = (ii + 1) / alpha;
         idx = (u-1) * alpha + 1 : u * alpha ;
-        L_temp = L_hat(:, idx);
         
-        %MM = L_temp - (P_hat_old *(P_hat_old' * L_temp));
-        MM = phi.times(L_temp);
-        
-        if(~ph)     %%detect phase
-            %             phi_t = eye(n) - P_hat * P_hat';
+        L_temp = L_hat(:, idx);            
+        MM = phi.times(L_temp);        
+        if(~ph)     %%detect phase            
             if(svds(MM, 1) >= sqrt(alpha * ev_thresh))
                 ph = 1;
                 t_hat = [t_hat, ii];
                 k = 0;
             end
         else        %%pca phase
-            P_hat = simpleEVD((L_hat(:, max(1, ii - alpha + 1) : ii)), r_init);
-%             P_hat = BlockStochPowerMethodGenRank((L_hat(:, max(1, ii - alpha + 1) : ii))...
-%                 , r_init, block_size);
+            P_hat = simpleEVD((L_hat(:, max(1, ii - alpha + 1) : ii)), r);
             phi_t = speye(n) - P_hat * P_hat';
-            k = k + 1;
-            
-            if(k==K + 1)
+            k = k + 1;            
+            if(k == K + 1)
                 P_hat_old = P_hat;
                 k = 1;
                 ph = 0;
                 phi_t = speye(n) - P_hat * P_hat';
             end
-        end
-    %end
-    
-    
-    %% Return subspace
-%    if((ii == 1) || ~(mod(ii + 1, alpha)))
-        P_track_full{cnt} = P_hat;
-        %P_track_new{cnt} = P_hat_new;
+        end   
+        %% Return subspace
+        P_track_full{cnt} = P_hat;        
         T_calc(cnt) = ii;
         cnt = cnt + 1;
     end
