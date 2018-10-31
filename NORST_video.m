@@ -1,8 +1,9 @@
 function [FG,BG] = NORST_video(M,mu,T_obs,P_init,ev_thresh,alpha,K,omega,tol)
 % This MATLAB function implements the code accompanying pre-print for
 % Background Recovery in videos:
-% [1]-"Subspace Tracking from Missing and Outlier Corrupted Data"
-%  arXiv:1810.03051v1 [cs.LG] 6 Oct 2018
+% [1] "Subspace Tracking from Missing and Outlier Corrupted Data"
+%      P. Narayanamurthy, V. Daneshpajooh, N. Vaswani
+%      arXiv:1810.03051v1 [cs.LG] 6 Oct 2018
 % 
 % Input:
 % M = measurement matrix
