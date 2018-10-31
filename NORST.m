@@ -3,7 +3,9 @@ function [L_hat, P_hat, S_hat,T_hat,...
                                               alpha, K, omega, tol)
 % This MATLAB function implements the code accompanying pre-print for
 % simulated data low-rank matrix recovery:
-% 
+% [1]-"Subspace Tracking from Missing and Outlier Corrupted Data"
+%  arXiv:1810.03051v1 [cs.LG] 6 Oct 2018
+%  
 % Input:
 % M = measurement matrix
 % T_obs = observed entries' support
