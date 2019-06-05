@@ -1,5 +1,5 @@
 % This wrapper calls the NORST function to perform the task of Background
-% Recovery for videos in presence of occlusions and corruptions
+% Recovery for real data (videos) in presence of occlusions and corruptions
 
 clear;
 clc;
