@@ -1,10 +1,11 @@
-This folder contains the code accompanying pre-print.
+This folder contains the code accompanying the following paper -to appear, IEEE Transactions on Signal Processing (2019).
 
 [1] "Subspace Tracking from Missing and Outlier Corrupted Data"
      Praneeth Narayanamurthy, Vahid Daneshpajooh, and Namrata Vaswani
-     arXiv:1810.03051v1 [cs.LG] 6 Oct 2018
+     arXiv:1810.03051v2 [cs.LG] 30 May 2019
 
 List of main files:
+1. wrapper_NORSTmiss_fixedsubspace.m : wrapper containing the simulated data experiments for NORST-miss in fixed Subspace
 1. wrapper_simulated_data.m : wrapper containing the simulated data experiments
 2. wrapper_VideoAnalysis.m  : wrapper for background recovery in videos.
 3. NORST.m       : main function which implements the NORST algorithm for subspace tracking (on simulated data)
