@@ -6,10 +6,11 @@ This folder contains the code accompanying the following paper -to appear, IEEE 
 
 List of main files:
 1. wrapper_NORSTmiss_fixedsubspace.m : wrapper containing the simulated data experiments for NORST-miss in fixed Subspace
-1. wrapper_simulated_data.m : wrapper containing the simulated data experiments
-2. wrapper_VideoAnalysis.m  : wrapper for background recovery in videos.
-3. NORST.m       : main function which implements the NORST algorithm for subspace tracking (on simulated data)
-4. NORST_video.m : main function which implements the NORST algorithm for background recovery (real data-video)
+2. wrapper_NORSTmiss_changingsubspace.m : wrapper containing the simulated data experiments for NORST-miss in changing Subspace
+3. wrapper_simulated_data.m : wrapper containing the simulated data experiments
+4. wrapper_VideoAnalysis.m  : wrapper for background recovery in videos.
+5. NORST.m       : main function which implements the NORST algorithm for subspace tracking (on simulated data)
+6. NORST_video.m : main function which implements the NORST algorithm for background recovery (real data-video)
 
 Folders:
 	YALL1 : folder containing files to implement ell-1 minimization.
