@@ -9,7 +9,6 @@ t_max = 10000; % number of time instances
 alpha = 60; % frame length
 f = 100; % condition number
 
-
 t_calc_pca = alpha-1:alpha:t_max;
 temp_SE_NORST = zeros(length(t_calc_pca), MC);
 temp_err_L_NORST = zeros(t_max, MC);
