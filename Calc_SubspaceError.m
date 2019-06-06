@@ -1,6 +1,6 @@
 function[SE_err] = Calc_SubspaceError(A, B)
 %   This MATLAB code calculates the subspace error of two subspaces
-%   
+%
 %   Input:
 %   A,B = matrices of size (m x n)
 %
@@ -21,4 +21,5 @@ if(~isempty(A) && ~isempty(B))
 else
     error('Error: empty input argument!\n');
 end
+
 end
