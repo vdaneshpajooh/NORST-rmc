@@ -51,6 +51,7 @@ for i = 1: size(Data1,2)
     writeVideo(writerObj, frame);   
 end
 
+
 hold off
 close(writerObj);
 close all
