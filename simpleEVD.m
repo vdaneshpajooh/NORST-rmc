@@ -10,5 +10,4 @@ function P_hat = simpleEVD(X, r)
 %   P_hat = basis matrix for output (m x r)
 
 [P_hat, ~] = svds(X, r);
-
 end
